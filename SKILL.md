@@ -65,7 +65,7 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 
 ## 4. 脚本索引
 
-所有脚本在 `scripts/`，优先用 `extract_text.py` 统一入口；单一场景可直接调专用脚本。
+所有脚本在 `scripts/`，优先用 `extract_text.py` 统一入口；单一场景可直接调专用脚本。下列命令默认在技能根目录执行；不在该目录时把 `scripts/` 换成 `"$HOME/Doubao/skills/work-doc-extract/scripts"`（双机家目录名 chenwenjie/wenjiechen 不同，一律用 `$HOME` 派生，勿写死绝对路径）。
 
 | 脚本 | 用途 | 典型用法 |
 |---|---|---|
@@ -96,7 +96,7 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 | PDF 的编辑、合并、拆分、表单填写、页面操作、加密 | 系统 `doubao-pdf` | 只做"PDF 内容提取与 OCR" |
 | 飞书在线文档 / 多维表格的读写 | `lark-doc` / `lark-base` | 不碰在线文档 |
 | 截图 / 长图 / 文本的敏感信息脱敏打码 | 你已有的 `image-text-redact` | 不做脱敏；其 OCR 定位模式可参考 |
-| 视频 / 音频转文字 | 其他技能 | 不处理音视频 |
+| 视频 / 音频转文字 | multiplatform-media-fetch（音视频下载、字幕、离线转写） | 不处理音视频 |
 
 ## 7. 环境与依赖
 

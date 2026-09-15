@@ -69,7 +69,7 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 
 | 脚本 | 用途 | 典型用法 |
 |---|---|---|
-| `extract_text.py` | **统一入口**：判型 + 文本层/Office 抽取 + 调度 Vision OCR，输出 Markdown | `python3 scripts/extract_text.py input.pdf -o out.md` |
+| `extract_text.py` | **统一入口**：判型 + 文本层/Office 抽取 + 调度 Vision OCR，输出 Markdown | `python3 scripts/extract_text.py input.pdf -o out.md`（已知是扫描件、想跳过文本层探测直接 OCR 时加 `--force-ocr`） |
 | `pdf_ocr.sh` | 图片型 PDF 批量 OCR（Vision），断点续跑、ETA、后处理、汇总 | `bash scripts/pdf_ocr.sh input.pdf [输出目录]` |
 | `ocr_vision.swift` | macOS Vision 单图 OCR（被 pdf_ocr.sh 调用，也可单独用） | `swift scripts/ocr_vision.swift page.png` |
 | `verify_extract.py` | 校验门：页数对账、空页、替换字符乱码、抽样 | `python3 scripts/verify_extract.py out.md --source input.pdf` |

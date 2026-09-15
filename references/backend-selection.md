@@ -4,7 +4,7 @@
 
 ## 一、五个引擎完整对比
 
-| 维度 | macOS Vision | PP-OCRv6 | PP-StructureV3 | PaddleOCR-VL 1.6 | Unlimited-OCR |
+| 维度 | macOS Vision | PP-OCRv6 | PP-StructureV3 | PaddleOCR-VL v1.6（0.9B 参数） | Unlimited-OCR |
 |---|---|---|---|---|---|
 | 类型 | 系统原生 OCR | 传统 det+rec 管线 | 7 模块确定性结构化管线 | 0.9B 文档 VLM | 3.3B VLM（DeepSeek-OCR 谱系） |
 | 模型体积 | 系统内置 | tiny 1.5M / small 7.7M / medium 34.5M | 版面 L 124MB + OCR + 表格 + 公式模块 | GGUF 全套约 1–1.5GB（语言模型 Q4 约 300MB + mmproj） | unlocr Q8 2.91GB / 约 6GB 内存；BF16 5.47GB |

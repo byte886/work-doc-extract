@@ -4,7 +4,7 @@
 
 ## 一、为什么优先 PaddleOCR-VL 而非 Unlimited-OCR
 
-| 维度 | PaddleOCR-VL 1.6 | Unlimited-OCR |
+| 维度 | PaddleOCR-VL v1.6（0.9B 参数） | Unlimited-OCR |
 |---|---|---|
 | 参数 | 0.9B | 3.3B |
 | GGUF 体积 | 全套约 1–1.5GB（语言模型 Q4 约 300MB + mmproj） | Q8 2.91GB / 约 6GB 内存；BF16 5.47GB |

@@ -1,6 +1,6 @@
 ---
 name: work-doc-extract
-description: 本地工作文档（PDF / 扫描件 / DOCX / PPTX / XLSX / CSV / 图片）的内容提取与 OCR 工具箱，统一输出 Markdown。当用户要"把这个 PDF/讲义/扫描件/Word/PPT/表格/图片转成文字或 Markdown""OCR 识别""提取文档内容""扫描件转可搜索文本""表格识别""公式识别""文档结构化""批量 OCR"时使用。内置五层引擎选型：文本层直取 → macOS Vision（纯文字默认，零安装）→ PP-StructureV3（表格/公式/多栏/图表结构化，确定性管线）→ PaddleOCR-VL 0.9B（重型 VLM 兜底，GGUF 可 CPU 跑）→ Unlimited-OCR（超长跨页整本特化），含断点续跑、页数对账校验门、批量处理与依赖自检。
+description: 本地工作文档（PDF / 扫描件 / DOCX / PPTX / XLSX / CSV / 图片）的内容提取与 OCR 工具箱，统一输出 Markdown。当用户要"把这个 PDF/讲义/扫描件/Word/PPT/表格/图片转成文字或 Markdown""OCR 识别""提取文档内容""扫描件转可搜索文本""表格识别""公式识别""文档结构化""批量 OCR"时使用。内置五层引擎选型：文本层直取 → macOS Vision（纯文字默认，零安装）→ PP-StructureV3（表格/公式/多栏/图表结构化，确定性管线）→ PaddleOCR-VL 0.9B（重型 VLM 兜底，GGUF 可 CPU 跑）→ Unlimited-OCR（超长跨页特化），含断点续跑、页数对账校验门、批量与依赖自检。
 compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。执行前先判平台(uname -s 返回 Darwin)，非 macOS 停止并告知需另行适配、不硬跑；将来补齐 Windows 后仍按平台分流并分别标注验证状态"
 ---
 
@@ -65,7 +65,7 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 
 ## 4. 脚本索引
 
-所有脚本在 `scripts/`，优先用 `extract_text.py` 统一入口；单一场景可直接调专用脚本。下列命令默认在技能根目录执行；不在该目录时把 `scripts/` 换成 `"$HOME/Doubao/skills/work-doc-extract/scripts"`（双机家目录名 chenwenjie/wenjiechen 不同，一律用 `$HOME` 派生，勿写死绝对路径）。
+所有脚本在 `scripts/`，优先用 `extract_text.py` 统一入口；单一场景可直接调专用脚本。下列命令默认在技能根目录执行；不在该目录时把 `scripts/` 换成 `"$HOME/Doubao/skills/work-doc-extract/scripts"`（双机家目录名可能不同，一律用 `$HOME` 派生，勿写死绝对路径）。
 
 | 脚本 | 用途 | 典型用法 |
 |---|---|---|

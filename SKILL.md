@@ -1,6 +1,6 @@
 ---
 name: work-doc-extract
-description: 本地工作文档（PDF / 扫描件 / DOCX / PPTX / XLSX / CSV / 图片）的内容提取与 OCR 工具箱，统一输出 Markdown。当用户要"把这个 PDF/讲义/扫描件/Word/PPT/表格/图片转成文字或 Markdown""OCR 识别""提取文档内容""扫描件转可搜索文本""表格识别""公式识别""文档结构化""批量 OCR"时使用。内置五层引擎选型：文本层直取 → macOS Vision（纯文字默认，零安装）→ PP-StructureV3（表格/公式/多栏/图表结构化，确定性管线）→ PaddleOCR-VL 0.9B（重型 VLM 兜底，GGUF 可 CPU 跑）→ Unlimited-OCR（超长跨页特化），含断点续跑、页数对账校验门、批量与依赖自检。
+description: 本地工作文档（PDF / 扫描件 / DOCX / PPTX / XLSX / CSV / 图片）的内容提取与 OCR 工具箱，统一输出 Markdown。当用户要"把这个 PDF/讲义/扫描件/Word/PPT/表格/图片转成文字或 Markdown""OCR 识别""提取文档内容""扫描件转可搜索文本""表格识别""公式识别""文档结构化""批量 OCR"时使用。内置五层引擎选型：文本层直取 → RapidOCR PP-OCRv6（纯文字默认，pip 一条装、跨平台、CPU 跑）→ PP-StructureV3（表格/公式/多栏/图表结构化，确定性管线）→ PaddleOCR-VL 0.9B（重型 VLM 兜底，GGUF 可 CPU 跑）→ Unlimited-OCR（超长跨页特化）；macOS Vision 保留为零安装兜底。含断点续跑、页数对账校验门、批量与依赖自检。
 compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。执行前先判平台(uname -s 返回 Darwin)，非 macOS 停止并告知需另行适配、不硬跑；将来补齐 Windows 后仍按平台分流并分别标注验证状态"
 ---
 
@@ -15,9 +15,9 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 
 ## 1. 核心原则
 
-1. **能用轻的不用重的**：有文本层就不 OCR；纯文字就用 Vision；只有表格/公式/多栏/手写才升级到结构化管线或 VLM。
+1. **能用轻的不用重的**：有文本层就不 OCR；纯文字就用 RapidOCR PP-OCRv6；只有表格/公式/多栏/手写才升级到结构化管线或 VLM。
 2. **确定性优先于 VLM**：PP-StructureV3 是模块拼装、不幻觉、不重复循环、给坐标；VLM（PaddleOCR-VL / Unlimited-OCR）只在确定性管线失效时启用。
-3. **本地优先、离线可用**：默认引擎（Vision + PyMuPDF + Office 解析库）零联网；PaddleOCR / VLM 是可选重型后端，默认不安装，用到再装。
+3. **本地优先、离线可用**：默认引擎（RapidOCR + PyMuPDF + Office 解析库）零联网；PaddleOCR / VLM 是可选重型后端，默认不安装，用到再装。
 4. **校验后交付**：任何 OCR/抽取结果必须过校验门（页数对账、空页、乱码替换字符、首尾抽样回读），不通过就重跑或换引擎。
 5. **来源可追溯**：输出 Markdown 头部记录源文件、所用引擎、时间、页数；分页用统一标记。
 
@@ -28,14 +28,15 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 | 层级 | 触发条件 | 首选引擎 | 备选 |
 |---|---|---|---|
 | 第 0 层 | PDF 有文本层 / DOCX / PPTX / XLSX / CSV | 直接解析（PyMuPDF / python-docx / python-pptx / openpyxl） | — |
-| L1 纯文字行 | 图片型 PDF / 扫描件 / 图片，内容是连续文字 | **macOS Vision**（零安装、约 1s/页） | PP-OCRv6（跨平台 / 多语言 / 竖排 / 要坐标） |
+| L1 纯文字行 | 图片型 PDF / 扫描件 / 图片，内容是连续文字 | **RapidOCR PP-OCRv6**（pip 一条装、跨平台、~1.5s/页） | macOS Vision（零安装备选，仅 Mac） |
 | L2 要结构 | 含表格 / 公式 / 多栏 / 图表 / 印章，需要保留版式 | **PP-StructureV3**（确定性管线、给坐标、不循环） | — |
 | L3 语义兜底 | L2 失效：手写 / 拍照扭曲 / 复杂语义 / 质量差 | **PaddleOCR-VL 0.9B**（GGUF 全套约 1–1.5GB，CPU 可跑） | Unlimited-OCR（仅超长跨页整本） |
 | 在线补充 | 只有零星几页、或要图表语义描述 | 豆包多模态视觉（零安装） | — |
 
 **各引擎安装、参数、坑、实测数据**：
-- Vision：[`references/engine-vision.md`](references/engine-vision.md)
-- PaddleOCR（PP-OCRv6 + PP-StructureV3）：[`references/engine-paddleocr.md`](references/engine-paddleocr.md)
+- RapidOCR（PP-OCRv6，L1 默认）：[`references/engine-rapidocr.md`](references/engine-rapidocr.md)
+- macOS Vision（L1 零安装备选）：[`references/engine-vision.md`](references/engine-vision.md)
+- PaddleOCR（PP-StructureV3）：[`references/engine-paddleocr.md`](references/engine-paddleocr.md)
 - VLM（PaddleOCR-VL GGUF vs Unlimited-OCR / unlocr）：[`references/engine-vlm-ocr.md`](references/engine-vlm-ocr.md)
 
 ## 3. 统一处理流程
@@ -69,11 +70,12 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 
 | 脚本 | 用途 | 典型用法 |
 |---|---|---|
-| `extract_text.py` | **统一入口**：判型 + 文本层/Office 抽取 + 调度 Vision OCR，输出 Markdown | `python3 scripts/extract_text.py input.pdf -o out.md`（已知是扫描件、想跳过文本层探测直接 OCR 时加 `--force-ocr`） |
-| `pdf_ocr.sh` | 图片型 PDF 批量 OCR（Vision），断点续跑、ETA、后处理、汇总 | `bash scripts/pdf_ocr.sh input.pdf [输出目录]` |
-| `ocr_vision.swift` | macOS Vision 单图 OCR（被 pdf_ocr.sh 调用，也可单独用） | `swift scripts/ocr_vision.swift page.png` |
+| `extract_text.py` | **统一入口**：判型 + 文本层/Office 抽取 + 调度 OCR，输出 Markdown | `python3 scripts/extract_text.py input.pdf -o out.md`（扫描件加 `--force-ocr`） |
+| `pdf_ocr.sh` | 图片型 PDF 批量 OCR（默认 RapidOCR，回退 Vision），断点续跑、后处理、汇总 | `bash scripts/pdf_ocr.sh input.pdf [输出目录]` |
+| `ocr_rapid.py` | **RapidOCR PP-OCRv6 单 PDF → Markdown**（被 pdf_ocr.sh 调用，也可直接用） | `python3 scripts/ocr_rapid.py page.png / file.pdf -o out.md` |
+| `ocr_vision.swift` | macOS Vision 单图 OCR（L1 兜底，仅 Mac） | `swift scripts/ocr_vision.swift page.png` |
 | `verify_extract.py` | 校验门：页数对账、空页、替换字符乱码、抽样 | `python3 scripts/verify_extract.py out.md --source input.pdf` |
-| `bootstrap.sh` | 依赖自检：检测 python / PyMuPDF / swift / PaddleOCR / llama.cpp 等是否可用，给出安装命令（不自动装重型后端） | `bash scripts/bootstrap.sh` |
+| `bootstrap.sh` | 依赖自检：检测 python / PyMuPDF / rapidocr / swift / PaddleOCR / llama.cpp 等 | `bash scripts/bootstrap.sh` |
 
 **PP-StructureV3 / PaddleOCR-VL / Unlimited-OCR 不提供封装脚本**：它们是可选重型后端，按 `references/` 中对应指南的命令直接调用（参数多、变化快，封装反而易过时）。`bootstrap.sh` 只检测可用性。
 
@@ -100,8 +102,9 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 
 ## 7. 环境与依赖
 
-- **必需（默认引擎）**：Python 3.10+、`pymupdf`、macOS 上 `swift`（Vision）。Office 格式按需装 `python-docx` / `python-pptx` / `openpyxl`。
-- **可选重型（默认不装）**：PaddleOCR（PP-OCRv6 + StructureV3，需独立 Python 3.12 venv，macOS 仅 CPU 版）、PaddleOCR-VL（llama.cpp ≥ b8110 + GGUF）、Unlimited-OCR（unlocr + 补丁版 llama.cpp）。
+- **必需（默认引擎 L1）**：Python 3.10+（**推荐 3.12**，onnxruntime 暂不支持 3.14）、`pymupdf`、`rapidocr`、`onnxruntime`。一条命令：`pip install rapidocr onnxruntime pymupdf`。模型首次运行自动下载，无需手动配。
+- **L1 零安装兜底**：macOS 上可改用 `OCR_ENGINE=vision` 走系统 Vision（需 `swiftc`，零 pip 依赖，但仅 Mac）。
+- **可选重型（默认不装）**：PaddleOCR（PP-StructureV3，需独立 Python 3.12 venv）、PaddleOCR-VL（llama.cpp + GGUF）、Unlimited-OCR（unlocr + 补丁版 llama.cpp）。
 - **先跑 `bash scripts/bootstrap.sh`** 看本机有什么，再决定装什么。不要把重型后端装进项目的转写 venv（会污染 FunASR 依赖），用独立 venv。
 - 系统 Python 若为 3.13+，PaddlePaddle 暂不支持，必须建 3.12 venv。
 

@@ -1,4 +1,5 @@
 ---
+type: toolkit
 name: work-doc-extract
 description: 本地工作文档（PDF / 扫描件 / DOCX / PPTX / XLSX / CSV / 图片）的内容提取与 OCR 工具箱，统一输出 Markdown。当用户要"把这个 PDF/讲义/扫描件/Word/PPT/表格/图片转成文字或 Markdown""OCR 识别""提取文档内容""扫描件转可搜索文本""表格识别""公式识别""文档结构化""批量 OCR"时使用。内置五层引擎选型：文本层直取 → RapidOCR PP-OCRv6（纯文字默认，pip 一条装、跨平台、CPU 跑）→ PP-StructureV3（表格/公式/多栏/图表结构化，确定性管线）→ PaddleOCR-VL 0.9B（重型 VLM 兜底，GGUF 可 CPU 跑）→ Unlimited-OCR（超长跨页特化）；macOS Vision 保留为零安装兜底。含断点续跑、页数对账校验门、批量与依赖自检。
 compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。执行前先判平台(uname -s 返回 Darwin)，非 macOS 停止并告知需另行适配、不硬跑；将来补齐 Windows 后仍按平台分流并分别标注验证状态"

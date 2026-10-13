@@ -1,7 +1,7 @@
 ---
 type: toolkit
 name: work-doc-extract
-description: 本地工作文档（PDF / 扫描件 / DOCX / PPTX / XLSX / CSV / 图片）的内容提取与 OCR 工具箱，统一输出 Markdown。当用户要"把这个 PDF/讲义/扫描件/Word/PPT/表格/图片转成文字或 Markdown""OCR 识别""提取文档内容""扫描件转可搜索文本""表格识别""公式识别""文档结构化""批量 OCR"时使用。内置五层引擎选型：文本层直取 → RapidOCR PP-OCRv6（纯文字默认，pip 一条装、跨平台、CPU 跑）→ PP-StructureV3（表格/公式/多栏/图表结构化，确定性管线）→ PaddleOCR-VL 0.9B（重型 VLM 兜底，GGUF 可 CPU 跑）→ Unlimited-OCR（超长跨页特化）；macOS Vision 保留为零安装兜底。含断点续跑、页数对账校验门、批量与依赖自检。
+description: 本地工作文档（PDF / 扫描件 / DOCX / PPTX / XLSX / CSV / 图片 / 知网 CAJ·KDH）的内容提取与 OCR 工具箱，统一输出 Markdown。当用户要"把这个 PDF/讲义/扫描件/Word/PPT/表格/图片/CAJ/知网文件转成文字或 Markdown""OCR 识别""提取文档内容""扫描件转可搜索文本""表格识别""公式识别""文档结构化""批量 OCR"时使用。内置五层引擎选型：文本层直取 → RapidOCR PP-OCRv6（纯文字默认，pip 一条装、跨平台、CPU 跑）→ PP-StructureV3（表格/公式/多栏/图表结构化，确定性管线）→ PaddleOCR-VL 0.9B（重型 VLM 兜底，GGUF 可 CPU 跑）→ Unlimited-OCR（超长跨页特化）；macOS Vision 保留为零安装兜底。含断点续跑、页数对账校验门、批量与依赖自检。
 compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。执行前先判平台(uname -s 返回 Darwin)，非 macOS 停止并告知需另行适配、不硬跑；将来补齐 Windows 后仍按平台分流并分别标注验证状态"
 ---
 
@@ -29,6 +29,7 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 | 层级 | 触发条件 | 首选引擎 | 备选 |
 |---|---|---|---|
 | 第 0 层 | PDF 有文本层 / DOCX / PPTX / XLSX / CSV | 直接解析（PyMuPDF / python-docx / python-pptx / openpyxl） | — |
+| 知网格式 | CAJ / KDH / HN / C8（知网私有格式） | **caj2pdf-rust CLI 转 PDF**（`scripts/caj_extract.sh` 一键链路） | CAJViewer GUI（最后手段，导出受限） |
 | L1 纯文字行 | 图片型 PDF / 扫描件 / 图片，内容是连续文字 | **RapidOCR PP-OCRv6**（pip 一条装、跨平台、~1.5s/页） | macOS Vision（零安装备选，仅 Mac） |
 | L2 要结构 | 含表格 / 公式 / 多栏 / 图表 / 印章，需要保留版式 | **PP-StructureV3**（确定性管线、给坐标、不循环） | — |
 | L3 语义兜底 | L2 失效：手写 / 拍照扭曲 / 复杂语义 / 质量差 | **PaddleOCR-VL 0.9B**（GGUF 全套约 1–1.5GB，CPU 可跑） | Unlimited-OCR（仅超长跨页整本） |
@@ -39,6 +40,7 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 - macOS Vision（L1 零安装备选）：[`references/engine-vision.md`](references/engine-vision.md)
 - PaddleOCR（PP-StructureV3）：[`references/engine-paddleocr.md`](references/engine-paddleocr.md)
 - VLM（PaddleOCR-VL GGUF vs Unlimited-OCR / unlocr）：[`references/engine-vlm-ocr.md`](references/engine-vlm-ocr.md)
+- 知网 CAJ/KDH/HN/C8（caj2pdf-rust 链路）：[`references/format-caj-kdh.md`](references/format-caj-kdh.md)
 
 ## 3. 统一处理流程
 
@@ -55,6 +57,7 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 ### 3.1 判型要点
 
 - **PDF 文本层探测**：用 PyMuPDF 逐页 `get_text("text")`，若平均每页可提取字符 < 阈值（默认 20），判定为图片型 PDF，走 OCR；否则直接抽取文本层。
+- **知网 CAJ/KDH/HN/C8**：先 `caj2pdf inspect` 判型（扩展名不可靠）→ `scripts/caj_extract.sh` 一键转 PDF + OCR。C8/HN-A 转出的 PDF 无文本层属正常（扫描件），必须 OCR。
 - **图片型 PDF 的表格/公式页**：Vision 批量跑完后，对疑似复杂页（OCR 结果出现大量碎片 / 数字矩阵 / `=` 密集）再用 PP-StructureV3 或 AI 视觉补，不必整本上重引擎。
 - **Office 格式**：DOCX/PPTX/XLSX 永远直接解析，不走 OCR（除非是扫描后塞进 Word 的图片，那应先提取图片再 OCR）。
 
@@ -75,6 +78,7 @@ compatibility: "仅在 macOS(Darwin) 实测可用；Windows/Linux 未适配。�
 | `pdf_ocr.sh` | 图片型 PDF 批量 OCR（默认 RapidOCR，回退 Vision），断点续跑、后处理、汇总 | `bash scripts/pdf_ocr.sh input.pdf [输出目录]` |
 | `ocr_rapid.py` | **RapidOCR PP-OCRv6 单 PDF → Markdown**（被 pdf_ocr.sh 调用，也可直接用） | `python3 scripts/ocr_rapid.py page.png / file.pdf -o out.md` |
 | `ocr_vision.swift` | macOS Vision 单图 OCR（L1 兜底，仅 Mac） | `swift scripts/ocr_vision.swift page.png` |
+| `caj_extract.sh` | **知网 CAJ/KDH/HN/C8 → Markdown 一键链路**（caj2pdf-rust 转 PDF + 渲染 + Vision OCR） | `bash scripts/caj_extract.sh input.caj [-o out.md]` |
 | `verify_extract.py` | 校验门：页数对账、空页、替换字符乱码、抽样 | `python3 scripts/verify_extract.py out.md --source input.pdf` |
 | `bootstrap.sh` | 依赖自检：检测 python / PyMuPDF / rapidocr / swift / PaddleOCR / llama.cpp 等 | `bash scripts/bootstrap.sh` |
 
